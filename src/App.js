@@ -5,7 +5,14 @@ import Table from 'react-bootstrap/Table'
 import FormFile from 'react-bootstrap/FormFile'
 import Button from 'react-bootstrap/Button'
 import Container from 'react-bootstrap/Container'
+import BootstrapTable from "react-bootstrap-table-next";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+const products = [
+  { time: "12321321321", duration: 90, spots_left: 15 },
+  { time: "12321123", duration: 60, spots_left: 5 }
+];
 
 export default class MainForm extends Component {
   constructor(props) {
@@ -14,8 +21,48 @@ export default class MainForm extends Component {
       all_notes: [],
       note: '',
       open: false,
+      columns: [
+         {
+           dataField: "time",
+           text: "Time",
+           sort: true
+         },
+         {
+           dataField: "duration",
+           text: "Duration",
+           sort: true
+         },
+         {
+           dataField: "spots_left",
+           text: "Spots Left",
+           sort: true
+         },
+         {
+           dataField: "register",
+           text: "",
+           formatter: this.linkRegister,
+           sort: true
+         }
+       ],
     };
   }
+
+  onRegisterChanged(row) {
+    console.log(row);
+  }
+
+  linkRegister = (cell, row, rowIndex, formatExtraData) => {
+    return (
+      <Button
+        onClick={() => {
+          this.onRegisterChanged(row);
+        }}
+      >
+        Register
+      </Button>
+    );
+  };
+
   render() {
     return (
       <Container>
@@ -72,7 +119,7 @@ export default class MainForm extends Component {
       <h2 className="title">How Does It Work</h2>
       <hr className="hr-title-line"/>
 
-      <div className="row" style={{"margin-top":"30px"}}>
+      <div className="row" style={{"marginTop":"30px"}}>
         <div className="col-lg-4 col-md-6">
           <div className="card">
             <div className="card-body">
@@ -106,23 +153,11 @@ export default class MainForm extends Component {
 
       <h2 className="title">Group Virtual Sessions</h2>
       <hr className="hr-title-line"/>
-
-
-      <div className="register-block">
-        <div className="register-info">
-          <h4 className="card-text">Next virtual group session</h4>
-          <p className="card-subtext">1 hr | $6.99</p>
-        </div>
-
-        <div className="register-btn-holder">
-          <a href="#" className="btn btn-primary register-button" style={{"margin-top":"0"}}>REGISTER</a>
-        </div>
-
-
-      </div>
-
-
-
+      <BootstrapTable
+        keyField="id"
+        data={products}
+        columns={this.state.columns}
+      />
 
       {/*<!-- ************************  Testimonials  ************************* -->*/}
 
