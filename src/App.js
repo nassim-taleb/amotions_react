@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import React, { Component } from 'react';
+import axios from 'axios';
 import Table from 'react-bootstrap/Table'
 import FormFile from 'react-bootstrap/FormFile'
 import Button from 'react-bootstrap/Button'
@@ -9,10 +10,12 @@ import BootstrapTable from "react-bootstrap-table-next";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
 const products = [
-  { time: "12321321321", duration: 90, spots_left: 15 },
-  { time: "12321123", duration: 60, spots_left: 5 }
+  { start_time: "12321321321", duration_minutes: 90, num_spots: 15 },
+  { start_time: "12321123", duration_minutes: 60, num_spots: 5 }
 ];
+
 
 export default class MainForm extends Component {
   constructor(props) {
@@ -23,17 +26,22 @@ export default class MainForm extends Component {
       open: false,
       columns: [
          {
-           dataField: "time",
+           dataField: "start_time",
            text: "Time",
            sort: true
          },
          {
-           dataField: "duration",
-           text: "Duration",
+           dataField: "duration_minutes",
+           text: "Duration (minutes)",
            sort: true
          },
          {
-           dataField: "spots_left",
+           dataField: "event_description",
+           text: "Event description",
+           sort: true
+         },
+         {
+           dataField: "num_spots",
            text: "Spots Left",
            sort: true
          },
@@ -62,6 +70,24 @@ export default class MainForm extends Component {
       </Button>
     );
   };
+
+  async getSessions(event) {
+    if (event){
+      event.preventDefault();
+    }
+    await axios.get(
+      'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/'
+    ).then((response) => {
+  console.log(response);
+  this.setState({['all_notes'] : response.data});
+}, (error) => {
+  console.log(error);
+});
+  }
+
+  componentDidMount(event) {
+    this.getSessions();
+  }
 
   render() {
     return (
@@ -151,11 +177,11 @@ export default class MainForm extends Component {
       </div>
       {/*<!-- ************************  Group Virtual Sessions  ************************* -->*/}
 
-      <h2 className="title">Group Virtual Sessions</h2>
+      <h2 className="title">Upcoming Group Virtual Sessions</h2>
       <hr className="hr-title-line"/>
       <BootstrapTable
         keyField="id"
-        data={products}
+        data={this.state.all_notes}
         columns={this.state.columns}
       />
 
