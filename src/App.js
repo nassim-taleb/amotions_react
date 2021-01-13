@@ -1,11 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { Component } from 'react';
+import React, { Component, useState} from 'react';
 import axios from 'axios';
-import Table from 'react-bootstrap/Table'
-import FormFile from 'react-bootstrap/FormFile'
-import Button from 'react-bootstrap/Button'
-import Container from 'react-bootstrap/Container'
+import { Modal, Button, Form, Table, FormFile, Container } from "react-bootstrap";
 import BootstrapTable from "react-bootstrap-table-next";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,14 +13,16 @@ const products = [
   { start_time: "12321123", duration_minutes: 60, num_spots: 5 }
 ];
 
-
 export default class MainForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       all_notes: [],
       note: '',
-      open: false,
+      email: '',
+      firstName: '',
+      lastName: '',
+      show_register_form: false,
       columns: [
          {
            dataField: "start_time",
@@ -53,11 +52,35 @@ export default class MainForm extends Component {
          }
        ],
     };
+
+    this.handleClose = this.handleClose.bind(this);
+
   }
 
-  onRegisterChanged(row) {
-    console.log(row);
+  handleClose() {
+    this.setState({['show_register_form'] : false});
   }
+
+  onRegisterFormSubmit(e) {
+    e.preventDefault();
+    console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email);
+    this.handleClose()
+  };
+
+  onRegisterChanged(row) {
+    this.setState({['show_register_form'] : true});
+    console.log(row);
+  };
+
+  handleChange(e) {
+   const target = e.target;
+   const name = target.name;
+   const value = target.value;
+
+   this.setState({
+     [name]: value
+   });
+ }
 
   linkRegister = (cell, row, rowIndex, formatExtraData) => {
     return (
@@ -184,6 +207,50 @@ export default class MainForm extends Component {
         data={this.state.all_notes}
         columns={this.state.columns}
       />
+      <Modal show={this.state.show_register_form} onHide={e => this.handleClose(e)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Registeration</Modal.Title>
+        </Modal.Header>
+        <Form.Group controlId="firstName">
+          <Form.Label>First Name</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.firstName}
+            name="firstName"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group controlId="lastName">
+          <Form.Label>Last Name</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.lastName}
+            name="lastName"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group controlId="email">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            value={this.state.email}
+            name="email"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group>
+           <Button
+           variant="primary"
+           type="button"
+           onClick={e => this.onRegisterFormSubmit(e)}
+           block>
+             Register
+           </Button>
+        </Form.Group>
+      </Modal>
 
       {/*<!-- ************************  Testimonials  ************************* -->*/}
 
