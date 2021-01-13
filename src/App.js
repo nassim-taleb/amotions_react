@@ -8,24 +8,20 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-const products = [
-  { start_time: "12321321321", duration_minutes: 90, num_spots: 15 },
-  { start_time: "12321123", duration_minutes: 60, num_spots: 5 }
-];
-
 export default class MainForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      all_notes: [],
+      all_data_from_db: [],
       note: '',
       email: '',
       firstName: '',
       lastName: '',
+      selected_session_ts: '',
       show_register_form: false,
       columns: [
          {
-           dataField: "start_time",
+           dataField: "start_time_formatted",
            text: "Time",
            sort: true
          },
@@ -63,13 +59,15 @@ export default class MainForm extends Component {
 
   onRegisterFormSubmit(e) {
     e.preventDefault();
-    console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email);
+    console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
     this.handleClose()
+    this.sendRegisteration()
   };
 
   onRegisterChanged(row) {
     this.setState({['show_register_form'] : true});
-    console.log(row);
+    this.setState({['selected_session_ts'] : row['start_time']});
+    console.log(row, row['start_time']);
   };
 
   handleChange(e) {
@@ -94,15 +92,46 @@ export default class MainForm extends Component {
     );
   };
 
+  async sendRegisteration() {
+    // await axios.post(
+    //   'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
+    //   {
+    //   'selected_session_ts' : this.state.selected_session_ts,
+    //   'email' : this.state.email,
+    //   'firstName' : this.state.firstName,
+    //   'lastName' : this.state.lastName
+    //   }
+
+    await axios({
+        method: 'post',
+        url: 'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
+        data: {
+            'selected_session_ts' : this.state.selected_session_ts,
+            'email' : this.state.email,
+            'firstName' : this.state.firstName,
+            'lastName' : this.state.lastName
+        },
+      //   headers: {
+      //   'Access-Control-Allow-Origin' : '*',
+      // },
+      })
+    .then((response) => {
+      console.log(response);
+      this.getSessions()
+    }, (error) => {
+      console.log(error);
+    });
+  }
+
   async getSessions(event) {
-    if (event){
+    if (event) {
       event.preventDefault();
     }
     await axios.get(
       'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/'
     ).then((response) => {
   console.log(response);
-  this.setState({['all_notes'] : response.data});
+  this.setState({['all_data_from_db'] : response.data});
 }, (error) => {
   console.log(error);
 });
@@ -204,7 +233,7 @@ export default class MainForm extends Component {
       <hr className="hr-title-line"/>
       <BootstrapTable
         keyField="id"
-        data={this.state.all_notes}
+        data={this.state.all_data_from_db}
         columns={this.state.columns}
       />
       <Modal show={this.state.show_register_form} onHide={e => this.handleClose(e)}>
