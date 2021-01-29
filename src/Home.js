@@ -8,6 +8,7 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { NavLink, Router, BrowserRouter, Switch, Route, Link} from 'react-router-dom';
 
+
 export default class Home extends Component {
   constructor(props) {
     super(props);
@@ -17,8 +18,11 @@ export default class Home extends Component {
       email: '',
       firstName: '',
       lastName: '',
+      description: '',
+      participants: '',
       selected_session_ts: '',
       show_register_form: false,
+      show_edit_form: false,
       columns: [
          {
            dataField: "start_time_formatted",
@@ -45,6 +49,12 @@ export default class Home extends Component {
            text: "",
            formatter: this.linkRegister,
            sort: true
+         },
+         {
+           dataField: "edit",
+           text: "",
+           formatter: this.linkEdit,
+           sort: true
          }
        ],
     };
@@ -59,9 +69,16 @@ export default class Home extends Component {
 
   onRegisterFormSubmit(e) {
     e.preventDefault();
-    console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
-    this.handleClose()
-    this.sendRegisteration()
+    // console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
+    this.handleClose();
+    this.sendRegisteration();
+  };
+
+  onEditFormSubmit(e) {
+    e.preventDefault();
+    // console.log("hello" + this.state.firstName + ' ' + this.state.lastName + ' ' + this.state.email, + ' ' + this.state.selected_session_ts);
+    this.handleEditClose();
+    this.updateSession();
   };
 
   onRegisterChanged(row) {
@@ -69,6 +86,21 @@ export default class Home extends Component {
     this.setState({['selected_session_ts'] : row['start_time']});
     console.log(row, row['start_time']);
   };
+
+  onEditChanged(row) {
+    this.setState({['show_edit_form'] : true});
+    this.setState({['selected_session_ts'] : row['start_time']});
+    var result = this.state.all_data_from_db.find(item => item.start_time === row['start_time'])
+    this.setState({['description'] : result['event_description']});
+    var participants = JSON.parse(result['participants']);
+    var output = participants.map(item => item.Email)
+    this.setState({['participants'] : output});
+    console.log(row);
+  };
+
+  handleEditClose() {
+    this.setState({['show_edit_form'] : false});
+  }
 
   handleChange(e) {
    const target = e.target;
@@ -92,6 +124,40 @@ export default class Home extends Component {
     );
   };
 
+  linkEdit = (cell, row, rowIndex, formatExtraData) => {
+    return (
+      <Button
+        onClick={() => {
+          this.onEditChanged(row);
+        }}
+      >
+        Edit
+      </Button>
+    );
+  };
+
+  async updateSession() {
+    await axios({
+        method: 'post',
+        url: 'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
+        params: { reqType: 'update_session'},
+        data: {
+            'selected_session_ts' : this.state.selected_session_ts,
+            'description' : this.state.description,
+        },
+      //   headers: {
+      //   'Access-Control-Allow-Origin' : '*',
+      // },
+      })
+    .then((response) => {
+      console.log(response);
+      this.getSessions()
+    }, (error) => {
+      console.log(error);
+    });
+  }
+
+
   async sendRegisteration() {
     // await axios.post(
     //   'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
@@ -105,6 +171,7 @@ export default class Home extends Component {
     await axios({
         method: 'post',
         url: 'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
+        params: { reqType: 'register_participant'},
         data: {
             'selected_session_ts' : this.state.selected_session_ts,
             'email' : this.state.email,
@@ -131,8 +198,10 @@ export default class Home extends Component {
       'https://cqakerxfi7.execute-api.us-west-2.amazonaws.com/prod/manageSessions/',
       { params: { reqType: 'summary' } }
     ).then((response) => {
-  console.log(response);
+  console.log('response:', response);
   this.setState({['all_data_from_db'] : response.data});
+  var result = JSON.parse( this.state.all_data_from_db[0]['participants']);
+  console.log('response data:', result[0]['Email']);
 }, (error) => {
   console.log(error);
 });
@@ -246,6 +315,43 @@ export default class Home extends Component {
            onClick={e => this.onRegisterFormSubmit(e)}
            block>
              Register
+           </Button>
+        </Form.Group>
+      </Modal>
+      <Modal show={this.state.show_edit_form} onHide={e => this.handleEditClose(e)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Event details</Modal.Title>
+        </Modal.Header>
+        <Form.Group controlId="description">
+          <Form.Label>Event description</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.description}
+            name="description"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group controlId="participants">
+          <Form.Label>List of participants</Form.Label>
+          <Form.Control
+            type="text"
+            as="textarea"
+            rows={5}
+            readonly="true"
+            value={this.state.participants}
+            name="participants"
+            placeholder=""
+            onChange={e => this.handleChange(e)}
+          />
+        </Form.Group>
+        <Form.Group>
+           <Button
+           variant="primary"
+           type="button"
+           onClick={e => this.onEditFormSubmit(e)}
+           block>
+             Save
            </Button>
         </Form.Group>
       </Modal>

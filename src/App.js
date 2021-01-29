@@ -21,13 +21,13 @@ function App() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
             <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="/admin">Admin</Nav.Link>
+          {/* <Nav.Link href="/admin">Admin</Nav.Link> */}
           </Nav>
         </Navbar.Collapse>
       </Navbar>
       <Switch>
            <Route exact path="/" component={Home}/>
-           <Route path="/admin" component={Admin}/>
+           {/* <Route path="/admin" component={Admin}/> */}
      </Switch>
      </div>
  </div>
