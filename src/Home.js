@@ -364,7 +364,7 @@ export default class Home extends Component {
       <div className="testimonial-card">
         <h5>Kim M.</h5>
         <p className="gray-text">“I have been really challenged to live in the present these two weeks. What I found through the session today is my body is more relaxed through our session, and I feel more present to my physical body, and this is very
-          helpful for me, because I feel more balanced, and I probably make better decisions when I feel more balanced.”</p>
+          helpful for me, because I feel more balanced, and I probably make better decisions when I feel more balanced.+”</p>
       </div>
 
 
